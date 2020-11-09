@@ -12,17 +12,17 @@ public class App extends JFrame{
     JButton button[] = new JButton[16];
 
     static class Calc {
-        static public int plus(String num1, String num2) {
-            return Integer.parseInt(num1)+Integer.parseInt(num2);
+        static public String plus(String num1, String num2) {
+            return Integer.toString(Integer.parseInt(num1)+Integer.parseInt(num2));
         } 
-        static public int minus(String num1, String num2) {
-            return Integer.parseInt(num1)-Integer.parseInt(num2);
+        static public String minus(String num1, String num2) {
+            return Integer.toString(Integer.parseInt(num1)-Integer.parseInt(num2));
         }
-        static public double mul(String num1, String num2) {
-            return Integer.parseInt(num1)*Integer.parseInt(num2);
+        static public String mul(String num1, String num2) {
+            return Double.toString((double)Integer.parseInt(num1)*Integer.parseInt(num2));
         }  
-        static public double div(String num1, String num2) {
-            return Integer.parseInt(num1)/Integer.parseInt(num2);
+        static public String div(String num1, String num2) {
+            return Double.toString((double)Integer.parseInt(num1)/Integer.parseInt(num2));
         } 
     }
 
@@ -94,16 +94,16 @@ public class App extends JFrame{
                 if(operands.length==2) {    
                     switch(c) {
                         case '+':
-                            txt_result.setText(Integer.toString(Calc.plus(operands[0], operands[1])));
+                            txt_result.setText(Calc.plus(operands[0], operands[1]));
                             break;
                         case '-':
-                            txt_result.setText(Integer.toString(Calc.minus(operands[0], operands[1])));
+                            txt_result.setText(Calc.minus(operands[0], operands[1]));
                             break;
                         case 'x':
-                            txt_result.setText(Double.toString(Calc.mul(operands[0], operands[1])));
+                            txt_result.setText(Calc.mul(operands[0], operands[1]));
                             break;
                         case '/':
-                            txt_result.setText(Double.toString(Calc.div(operands[0], operands[1])));
+                            txt_result.setText(Calc.div(operands[0], operands[1]));
                             break;
                     }    
                 }   
