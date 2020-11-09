@@ -22,7 +22,7 @@ public class App extends JFrame{
             return Double.toString((double)Integer.parseInt(num1)*Integer.parseInt(num2));
         }  
         static public String div(String num1, String num2) {
-            return Double.toString((double)Integer.parseInt(num1)/Integer.parseInt(num2));
+            return String.format("%.6f", (double)Integer.parseInt(num1)/Integer.parseInt(num2));
         } 
     }
 
@@ -81,15 +81,13 @@ public class App extends JFrame{
             if(b.getText().equals("+")||b.getText().equals("-")
                 ||b.getText().equals("x")||b.getText().equals("/"))
                 c = b.getText().charAt(0);
-
             //Clear
-            if(b.getText().equals("CE")) {
+            else if(b.getText().equals("CE")) {
                 txt_math_exp.setText("");
                 txt_result.setText("");
             }
-
             //Calculate
-            if(b.getText().equals("Calc")) {
+            else if(b.getText().equals("Calc")) {
                 String operands[] = txt_math_exp.getText().split(regExp);
                 if(operands.length==2) {    
                     switch(c) {
@@ -110,8 +108,6 @@ public class App extends JFrame{
                 else
                     txt_result.setText("Error");
             }
-
-
         }
     }
 
