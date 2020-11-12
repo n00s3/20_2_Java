@@ -105,7 +105,7 @@ public class App extends JFrame{
                             break;
                     }    
                 }   
-                else
+                else 
                     txt_result.setText("Error");
             }
         }
