@@ -35,21 +35,23 @@ public class App extends JFrame{
 class GamePanel extends JPanel {
 	private int i=0;
 	private int score = 0;
-	final int MAX = 3;
+	private boolean reload = true;
+	final int MAX = 5;
+	
 	private TargetThread targetThread=null;
 	private JLabel baseLabel;
 	private JLabel targetLabel;
 	private JLabel label;
+	private JLabel label_txt;
+	private JLabel bullets[] = new JLabel[MAX];
 	class Bullet {
 		private JLabel bulletLabel;
-		private boolean check;
 		private int id;
 
 		Bullet(ImageIcon img_bullet, int id){
 			this.bulletLabel = new JLabel(img_bullet);
 			bulletLabel.setSize(img_bullet.getIconWidth(),img_bullet.getIconWidth());
 			this.id = id;
-			this.check = true;
 		}
 
 		public void setID(int id) {
@@ -58,13 +60,6 @@ class GamePanel extends JPanel {
 		public int getID() {
 			return id;
 		}
-
-		public void setCheck(boolean bool){
-			this.check = bool;
-		}  
-		public boolean getCheck(){
-			return this.check;
-		}  
 	}
 	Bullet bullet[] = new Bullet[MAX];
 	
@@ -72,7 +67,7 @@ class GamePanel extends JPanel {
 	public GamePanel() {
 		setLayout(null);
 
-		ImageIcon img_base = new ImageIcon("images/base.png");
+		ImageIcon img_base = new ImageIcon("images/base.jpg");
 		baseLabel = new JLabel(img_base);
 		baseLabel.setSize(img_base.getIconWidth(),img_base.getIconWidth());
 
@@ -84,22 +79,22 @@ class GamePanel extends JPanel {
 		for (int i=0; i<MAX; i++) {
 			bullet[i] = new Bullet(img_bullet, i);
 			add(bullet[i].bulletLabel);
+			bullets[i] = new JLabel(img_bullet);
+			bullets[i].setSize(img_bullet.getIconWidth(),img_bullet.getIconWidth());
+			add(bullets[i]);
 		}
 
-		// JLabel stage_label = new JLabel("");
-		// stage_label.setForeground(Color.WHITE);
-		// stage_label.setSize(100, 100);
-		// stage_label.setLocation(250, 250);
-		// add(stage_label);
-		// MonitorThread mtThread = new MonitorThread(stage_label);
-		// mtThread.start();
-		
-
+		label_txt = new JLabel("RELOAD");
+		label_txt.setForeground(Color.WHITE);
+		label_txt.setSize(50, 10);
+		label_txt.setLocation(0, 0);
+		label_txt.setVisible(false);
 
 		label = new JLabel("0");
 		label.setForeground(Color.GREEN);
 		label.setSize(30, 15);
 		label.setLocation(450, 0);
+		add(label_txt);
 		add(label);
 		add(baseLabel);
 		add(targetLabel);
@@ -108,9 +103,11 @@ class GamePanel extends JPanel {
 	public void startGame() {
 		baseLabel.setLocation(this.getWidth()/2-20, this.getHeight()-40);
 		
-		for(int i=0; i<MAX; i++)
-			bullet[i].bulletLabel.setLocation(i*10, 0);		
+		for(int i=0; i<MAX; i++){
+			bullet[i].bulletLabel.setLocation(-10, -10);
+			bullets[i].setLocation(i*10, 0);		
 
+		}
 		targetLabel.setLocation(0, 0);
 		
 		targetThread = new TargetThread(targetLabel);
@@ -121,58 +118,26 @@ class GamePanel extends JPanel {
 		baseLabel.addKeyListener(new KeyAdapter() {
 			private BulletThread  bulletThread = null;
 			public void keyPressed(KeyEvent e) {
-				if(e.getKeyChar() == '\n') {
-					if(bullet[i].getCheck()) {	//총알이 있을 때
+				if(e.getKeyChar() == '\n' && reload == true) {
 						bullet[i].bulletLabel.setLocation(baseLabel.getX()+15, baseLabel.getY());
-						bulletThread = new BulletThread(bullet, bullet[i], targetLabel, targetThread, label);
+						bulletThread = new BulletThread(bullet[i], targetLabel, targetThread, label);
 						bulletThread.start();
-						// System.out.println(i);
 						i+=1; i%=MAX;
-					}		
-					else {	//총알 없음
-						
-
 					}
-					//if(bulletThread==null || !bulletThread.isAlive()) {
-					//}
-				}
-
+				
 				switch (e.getKeyCode()) {
 					case KeyEvent.VK_LEFT:
 						if (baseLabel.getX() > 10)
 							baseLabel.setLocation(baseLabel.getX()-15, baseLabel.getY());
 						break;
 					case KeyEvent.VK_RIGHT:
-						if (baseLabel.getX() < 500-60)
+						if (baseLabel.getX() < baseLabel.getParent().getWidth()-60)
 							baseLabel.setLocation(baseLabel.getX()+15, baseLabel.getY());
 						break;
 				}
 			}
 		});
 	}
-
-	// class MonitorThread extends Thread {
-	// 	private JLabel label;
-	// 	private int stage=1;
-	// 	public MonitorThread(JLabel label) {
-	// 		this.label = label;
-	// 		label.setLocation(0, 0);
-	// 		label.getParent().repaint();
-	// 	}
-	// 	public void run() {
-	// 		while(true) {
-	// 			try {
-	// 				sleep(10);
-	// 				if(score > 0 && score%50 == 0) {
-	// 					stage++;
-	// 					label.setText("Stage "+stage);
-	// 				}
-	// 			} catch (Exception e) {
-	// 				//TODO: handle exception
-	// 			}
-	// 		}
-	// 	}
-	// }
 
 	class TargetThread extends Thread {
 		private JComponent target;
@@ -205,19 +170,16 @@ class GamePanel extends JPanel {
 			rand_num = random.nextInt(3);
 			switch(rand_num) {
 				case 0:
-					// System.out.println("left");
 					left();
 					target.setLocation(-60, random.nextInt(300));
 					break;
 				case 1:
-					// System.out.println("right");
 					right();
-					target.setLocation(500, random.nextInt(300));
+					target.setLocation(target.getParent().getWidth(), random.nextInt(300));
 					break;
 				case 2:
-					// System.out.println("down");
 					down();
-					target.setLocation(random.nextInt(440)+10, -60);
+					target.setLocation(random.nextInt(target.getParent().getWidth()-50), -60);
 					break;
 			}
 		}
@@ -226,26 +188,17 @@ class GamePanel extends JPanel {
 			while(true) {
 				int x = target.getX()+xval;
 				int y = target.getY()+yval;
-				if(rand_num == 0 && x > GamePanel.this.getWidth()) // left
+				if (x > GamePanel.this.getWidth() || x < -60 || y > target.getParent().getHeight())
 					rand_gen();
-					// target.setLocation(-10,0);
-				else if (rand_num == 1 && x < -60)
-					rand_gen();
-					// target.setLocation(500,0);
-				else if (rand_num == 2 && y > 500)
-					rand_gen();
-					// target.setLocation(random.nextInt(450)+10, 0);
 				else	//pass
 					target.setLocation(x, y);
-
 				target.getParent().repaint();
+				
 				try {
-					sleep(20-score/50);
+					sleep(20-score/50);	//stage
 				}
 				catch(InterruptedException e) {
-					// the case of hit by a bullet
 					rand_gen();
-					
 					target.getParent().repaint();
 					try {
 						sleep(500); // 0.5초 기다린 후에 계속한다.
@@ -255,16 +208,32 @@ class GamePanel extends JPanel {
 		}			
 	}
 
+	class ReloadThread extends Thread {
+		public void run() {
+			reload = false;
+			label_txt.setVisible(true);
+			try {
+				sleep(1000);
+			} catch (Exception e) {
+
+			}
+			label_txt.setVisible(false);
+			
+			for(int i=0; i<MAX; i++) {
+				bullets[i].setVisible(true);
+			}
+			reload = true;
+		}
+	}
+
 	
 	class BulletThread extends Thread {
 		private JComponent target;
 		private Bullet bullet;
-		private Bullet bulletArr[];
 		private Thread targetThread;
 		private JLabel label;
 		
-		public BulletThread(Bullet bulletArr[], Bullet bullet, JComponent target, Thread targetThread, JLabel label) {
-			this.bulletArr = bulletArr; 
+		public BulletThread(Bullet bullet, JComponent target, Thread targetThread, JLabel label) {
 			this.bullet = bullet;
 			this.target = target;
 			this.targetThread = targetThread;	
@@ -272,21 +241,20 @@ class GamePanel extends JPanel {
 		}
 		
 		public void run() {
-			bullet.setCheck(false); //쐈음
+			bullets[bullet.getID()].setVisible(false);
+
+			if(bullet.getID()==MAX-1) {
+				ReloadThread rt = new ReloadThread();
+				rt.start();
+			}
+
 			while(true) {
 				// 명중하였는지 확인
 				if(hit()) {
 					targetThread.interrupt();
-					// bullet.setLocation(bullet.getParent().getWidth()/2 - 5, bullet.getParent().getHeight()-60);						
 					bullet.bulletLabel.setLocation(-10, 0);
 					score += 10;
 					label.setText(Integer.toString(score));
-					if(bullet.getID()==MAX-1) {
-						for(int i=0; i<MAX; i++) {
-							bulletArr[i].bulletLabel.setLocation(i*10, 0);
-							bulletArr[i].setCheck(true);
-						}		
-					}
 						
 					return;
 				}
@@ -294,14 +262,9 @@ class GamePanel extends JPanel {
 					int x = bullet.bulletLabel.getX() ;
 					int y = bullet.bulletLabel.getY() - 5;
 					if(y < 0) {
-						// bullet.setLocation(bullet.getParent().getWidth()/2 - 5, bullet.getParent().getHeight()-60);
 						bullet.bulletLabel.setLocation(-10, 0);
 						bullet.bulletLabel.getParent().repaint();
-						if(bullet.getID()==MAX-1)
-							for(int i=0; i<MAX; i++) {
-								bulletArr[i].bulletLabel.setLocation(i*10, 0);	
-								bulletArr[i].setCheck(true);
-							}
+
 						return; // thread ends
 					}
 					bullet.bulletLabel.setLocation(x, y);
