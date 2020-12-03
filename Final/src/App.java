@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
@@ -22,7 +23,7 @@ public class App extends JFrame{
 		setSize(500,500);
 		setResizable(false);		
 		setVisible(true);
-		
+
 		// 컨텐트팬을 구성하는 모든 컴포넌트들의 위치와 크기가 결정된 후 게임을 시작하게 한다.
 		p.startGame();
 	}
@@ -43,6 +44,7 @@ class GamePanel extends JPanel {
 	private JLabel targetLabel;
 	private JLabel label;
 	private JLabel label_txt;
+	private JLabel label_stage;
 	private JLabel bullets[] = new JLabel[MAX];
 	class Bullet {
 		private JLabel bulletLabel;
@@ -51,7 +53,7 @@ class GamePanel extends JPanel {
 		Bullet(ImageIcon img_bullet, int id){
 			this.bulletLabel = new JLabel(img_bullet);
 			bulletLabel.setSize(img_bullet.getIconWidth(),img_bullet.getIconWidth());
-			this.id = id;
+			setID(id);
 		}
 
 		public void setID(int id) {
@@ -74,6 +76,7 @@ class GamePanel extends JPanel {
 		ImageIcon img_target = new ImageIcon("images/target.jpg");
 		targetLabel = new JLabel(img_target);
 		targetLabel.setSize(img_target.getIconWidth(),img_target.getIconWidth());
+		targetLabel.setSize(50, 50);
 
 		ImageIcon img_bullet = new ImageIcon("images/bullet.png");
 		for (int i=0; i<MAX; i++) {
@@ -90,11 +93,20 @@ class GamePanel extends JPanel {
 		label_txt.setLocation(0, 0);
 		label_txt.setVisible(false);
 
+		label_stage = new JLabel("");
+		label_stage.setForeground(Color.WHITE);
+		label_stage.setSize(300, 300);
+		label_stage.setFont(new Font("Gothic", Font.BOLD, 24));
+		label_stage.setLocation(185, 50);
+		label_stage.setVisible(false);
+
 		label = new JLabel("0");
 		label.setForeground(Color.GREEN);
 		label.setSize(30, 15);
 		label.setLocation(450, 0);
+		
 		add(label_txt);
+		add(label_stage);
 		add(label);
 		add(baseLabel);
 		add(targetLabel);
@@ -118,7 +130,7 @@ class GamePanel extends JPanel {
 		baseLabel.addKeyListener(new KeyAdapter() {
 			private BulletThread  bulletThread = null;
 			public void keyPressed(KeyEvent e) {
-				if(e.getKeyChar() == '\n' && reload == true) {
+				if(e.getKeyChar() == '\n' || e.getKeyChar() == 32 && reload == true) { //enter + space bar
 						bullet[i].bulletLabel.setLocation(baseLabel.getX()+15, baseLabel.getY());
 						bulletThread = new BulletThread(bullet[i], targetLabel, targetThread, label);
 						bulletThread.start();
@@ -167,7 +179,7 @@ class GamePanel extends JPanel {
 		}
 
 		public void rand_gen() {
-			rand_num = random.nextInt(3);
+			rand_num = random.nextInt(4);
 			switch(rand_num) {
 				case 0:
 					left();
@@ -177,7 +189,8 @@ class GamePanel extends JPanel {
 					right();
 					target.setLocation(target.getParent().getWidth(), random.nextInt(300));
 					break;
-				case 2:
+				case 2: 
+				case 3:
 					down();
 					target.setLocation(random.nextInt(target.getParent().getWidth()-50), -60);
 					break;
@@ -195,18 +208,37 @@ class GamePanel extends JPanel {
 				target.getParent().repaint();
 				
 				try {
-					sleep(20-score/50);	//stage
+					sleep(20-(score/50));	//stage
 				}
 				catch(InterruptedException e) {
 					rand_gen();
 					target.getParent().repaint();
 					try {
-						sleep(500); // 0.5초 기다린 후에 계속한다.
+						sleep(50); // 0.05초 기다린 후에 계속한다.
 					}catch(InterruptedException e2) {}					
 				}
 			}
 		}			
 	}
+	class StageThread extends Thread {
+		int stage;
+
+		public StageThread(int score) {
+			stage = score/50;
+		}
+
+		public void run() {
+			label_stage.setText("<html>STAGE : " + (stage+1) + "<br>SPEED UP!</html>");
+			label_stage.setVisible(true);
+			try {
+				sleep(2000);
+			} catch (Exception e) {
+
+			}
+			label_stage.setVisible(false);
+		}
+	}
+
 
 	class ReloadThread extends Thread {
 		public void run() {
@@ -254,6 +286,11 @@ class GamePanel extends JPanel {
 					targetThread.interrupt();
 					bullet.bulletLabel.setLocation(-10, 0);
 					score += 10;
+					if (score > 0 && score % 50 == 0) {
+						StageThread st = new StageThread(score);
+						st.start();
+					}
+
 					label.setText(Integer.toString(score));
 						
 					return;
